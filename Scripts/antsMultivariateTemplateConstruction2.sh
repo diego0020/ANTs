@@ -980,7 +980,8 @@ if [[ "$RIGID" -eq 1 ]];
   then
     count=0
     jobIDs=""
-
+    jobScripts=""
+    
     for (( i = 0; i < ${#IMAGESETARRAY[@]}; i+=$NUMBEROFMODALITIES ))
       do
 
@@ -1029,11 +1030,13 @@ if [[ "$RIGID" -eq 1 ]];
           then
             id=`qsub -cwd -S /bin/bash -N antsBuildTemplate_rigid -v ANTSPATH=$ANTSPATH $QSUBOPTS $qscript | awk '{print $3}'`
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
             sleep 0.5
         elif [[ $DOQSUB -eq 4 ]];
           then
             id=`qsub -N antsrigid -v ANTSPATH=$ANTSPATH $QSUBOPTS -q nopreempt -l nodes=1:ppn=1 -l mem=${PBSMEMORY} -l walltime=${PBSWALLTIME} $qscript | awk '{print $1}'`
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
             sleep 0.5
         elif [[ $DOQSUB -eq 2 ]];
           then
@@ -1045,6 +1048,7 @@ if [[ "$RIGID" -eq 1 ]];
             id=`xgrid $XGRIDOPTS -job submit /bin/bash $qscript | awk '{sub(/;/,"");print $3}' | tr '\n' ' ' | sed 's:  *: :g'`
             #echo "xgrid $XGRIDOPTS -job submit /bin/bash $qscript"
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
         elif [[ $DOQSUB -eq 0 ]];
           then
             echo $qscript
@@ -1061,7 +1065,8 @@ if [[ "$RIGID" -eq 1 ]];
         echo " Starting ANTS rigid registration on SGE cluster. Submitted $count jobs "
         echo "--------------------------------------------------------------------------------------"
         # now wait for the jobs to finish. Rigid registration is quick, so poll queue every 60 seconds
-        ${ANTSPATH}/waitForSGEQJobs.pl 1 60 $jobIDs
+        #${ANTSPATH}/waitForSGEQJobs.pl 1 60 $jobIDs
+        ${ANTSPATH}/waitForSGEQJobs.py 1 60 $jobIDs $jobScripts
         # Returns 1 if there are errors
         if [[ ! $? -eq 0 ]];
           then
@@ -1351,6 +1356,7 @@ while [[ $i -lt ${ITERATIONLIMIT} ]];
             echo -e "$exe" > $qscript
             id=`qsub -cwd -N antsBuildTemplate_deformable_${i} -S /bin/bash -v ANTSPATH=$ANTSPATH $QSUBOPTS $qscript | awk '{print $3}'`
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
             sleep 0.5
         elif [[ $DOQSUB -eq 4 ]];
           then
@@ -1358,6 +1364,7 @@ while [[ $i -lt ${ITERATIONLIMIT} ]];
             echo -e "$exe" >> $qscript
             id=`qsub -N antsdef${i} -v ANTSPATH=$ANTSPATH -q nopreempt -l nodes=1:ppn=1 -l mem=${PBSMEMORY} -l walltime=${PBSWALLTIME} $QSUBOPTS $qscript | awk '{print $1}'`
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
             sleep 0.5
         elif [[ $DOQSUB -eq 2 ]];
           then
@@ -1368,6 +1375,7 @@ while [[ $i -lt ${ITERATIONLIMIT} ]];
             echo -e "$exe" >> $qscript
             id=`xgrid $XGRIDOPTS -job submit /bin/bash $qscript | awk '{sub(/;/,"");print $3}' | tr '\n' ' ' | sed 's:  *: :g'`
             jobIDs="$jobIDs $id"
+            jobScripts="$jobScripts $qscript"
         elif [[ $DOQSUB -eq 0 ]];
           then
             echo -e $exe > $qscript
@@ -1386,7 +1394,8 @@ while [[ $i -lt ${ITERATIONLIMIT} ]];
         echo " Starting ANTS registration on SGE cluster. Iteration: $itdisplay of $ITERATIONLIMIT"
         echo "--------------------------------------------------------------------------------------"
         # now wait for the stuff to finish - this will take a while so poll queue every 10 mins
-        ${ANTSPATH}/waitForSGEQJobs.pl 1 600 $jobIDs
+        #${ANTSPATH}/waitForSGEQJobs.pl 1 600 $jobIDs
+        ${ANTSPATH}/waitForSGEQJobs.py 1 600 $jobIDs $jobScripts
         if [[ ! $? -eq 0 ]];
           then
             echo "qsub submission failed - jobs went into error state"
