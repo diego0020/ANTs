@@ -1218,7 +1218,8 @@ while [[ $i -lt ${ITERATIONLIMIT} ]];
     #    done
     # fi
     # Job IDs of jobs submitted to queue in loop below
-    jobIDs=""
+    local jobIDs=""
+    local jobScripts=""
     # Reinitialize count to 0
     count=0
     # Submit registration of each input to volume template to SGE or run locally.

@@ -41,6 +41,10 @@ names=ids_and_names[len(ids_and_names)//2:]
 
 job_scripts=dict(izip(ids,names))
 
+#No longer used
+del ids
+del names
+
 # Check for user stupidity
 if (delay < 10) :
     print "Sleep period is too short, will poll queue once every 10 seconds\n";
@@ -120,13 +124,15 @@ while (jobsIncomplete>0) :
         if status == 0:
             #success            
             completed_jobs.add(j)
+            del job_scripts[j]
         else:
             failed_jobs.add(j)
             print "job %d failed, rescheduling job"%j
-            new_job_id = int(subprocess.check_output(reschedule_job%(ANTSPATH,job_scripts[j]) , shell=True))
-            job_scripts[new_job_id]=job_scripts[j]
+            script = job_scripts.pop(j)
+            new_job_id = int(subprocess.check_output(reschedule_job%(ANTSPATH,script) , shell=True))
+            job_scripts[new_job_id]=script
             print "new job %d"%j
-        job_scripts.pop(j)    
+            
     
     print "successfully completed jobs:"
     print sorted(completed_jobs)
