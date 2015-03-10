@@ -135,7 +135,7 @@ while (jobsIncomplete>0) :
     den = len(completed_jobs)+len(failed_jobs)
     if den==0:
         den = 1
-    print "completed ratio: %.2f %%"%(len(completed_jobs)/den*100)
+    print "success ratio: %.2f %%"%(len(completed_jobs)/den*100)
         
     jobsIncomplete = len(job_scripts)
 
