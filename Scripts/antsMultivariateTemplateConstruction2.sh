@@ -1066,6 +1066,7 @@ if [[ "$RIGID" -eq 1 ]];
         echo "--------------------------------------------------------------------------------------"
         # now wait for the jobs to finish. Rigid registration is quick, so poll queue every 60 seconds
         #${ANTSPATH}/waitForSGEQJobs.pl 1 60 $jobIDs
+        echo ${ANTSPATH}/waitForSGEQJobs.py 1 60 $jobIDs $jobScripts
         ${ANTSPATH}/waitForSGEQJobs.py 1 60 $jobIDs $jobScripts
         # Returns 1 if there are errors
         if [[ ! $? -eq 0 ]];

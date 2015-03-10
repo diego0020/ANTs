@@ -1,5 +1,7 @@
 #!/usr/bin/python2
 
+from __future__ import division
+
 import sys
 from itertools import izip
 import subprocess
@@ -24,15 +26,18 @@ import os
 
 # First thing to do is parse our input
 ANTSPATH = os.environ.get("ANTSPATH","")
+print ANTSPATH
 reschedule_job = "qsub -cwd -S /bin/bash -N antsBuildTemplate_rigid -v ANTSPATH=%s -r yes %s | awk '{print $3}'"
 
 args = sys.argv
-verbose = sys.argv[1] > 0
+print args
+
+verbose = args[1] > 0
 delay = int(sys.argv[2])
 
-ids_and_names = sys.argv[3:]
-ids=[int(i) for i in ids_and_names[:len(ids_and_names)/2]]
-names=ids_and_names[len(ids_and_names)/2:]
+ids_and_names = args[3:]
+ids=[int(i) for i in ids_and_names[:len(ids_and_names)//2]]
+names=ids_and_names[len(ids_and_names)//2:]
 
 job_scripts=dict(izip(ids,names))
 
@@ -86,7 +91,7 @@ completed_jobs = set()
 failed_jobs = set()
 
 while (jobsIncomplete>0) :
-
+    sys.stdout.flush()
     time.sleep(delay)
     # Jobs that are still showing up in qstat
     qstatOutput = subprocess.check_output(('qstat', '-u', user))
@@ -128,8 +133,9 @@ while (jobsIncomplete>0) :
     print "failed jobs:"
     print sorted(failed_jobs)
     den = len(completed_jobs)+len(failed_jobs)
-    if den>0:
-        print "completed ratio: %.2f %"%(float(len(failed_jobs))/den*100)
+    if den==0:
+        den = 1
+    print "completed ratio: %.2f %%"%(len(completed_jobs)/den*100)
         
     jobsIncomplete = len(job_scripts)
 
